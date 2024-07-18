@@ -65,6 +65,15 @@ services:
     networks:
       - servernetwork
 
+  frontend:
+    build: ../people-registration-frontend
+    container_name: application-frontend
+    ports:
+      - 3000:3000
+    command: bash -c "npm install --legacy-peer-deps && npm run serve"
+    volumes:
+      - ../people-registration-frontend:/app
+
 networks:
   servernetwork:
     driver: bridge

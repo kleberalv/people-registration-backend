@@ -3,25 +3,38 @@
 namespace App\Repositories;
 
 use App\Models\Endereco;
+use Exception;
 
 class EnderecoRepository
 {
     public function create($data)
     {
-        return Endereco::create($data);
+        try {
+            return Endereco::create($data);
+        } catch (Exception $e) {
+            throw new Exception('Erro ao criar endereço: ' . $e->getMessage());
+        }
     }
 
     public function update($id, $data)
     {
-        $endereco = Endereco::findOrFail($id);
-        $endereco->update($data);
-        return $endereco;
+        try {
+            $endereco = Endereco::findOrFail($id);
+            $endereco->update($data);
+            return $endereco;
+        } catch (Exception $e) {
+            throw new Exception('Erro ao atualizar endereço: ' . $e->getMessage());
+        }
     }
 
     public function delete($id)
     {
-        $endereco = Endereco::findOrFail($id);
-        $endereco->delete();
-        return $endereco;
+        try {
+            $endereco = Endereco::findOrFail($id);
+            $endereco->delete();
+            return $endereco;
+        } catch (Exception $e) {
+            throw new Exception('Erro ao excluir endereço: ' . $e->getMessage());
+        }
     }
 }

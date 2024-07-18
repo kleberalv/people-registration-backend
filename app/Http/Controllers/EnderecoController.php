@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\EnderecoService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Exception;
 
 class EnderecoController extends Controller
 {
@@ -17,21 +18,41 @@ class EnderecoController extends Controller
 
     public function store(Request $request, $pessoaId)
     {
-        $data = $request->all();
-        $data['pessoa_id'] = $pessoaId;
-        $this->enderecoService->create($data);
-        return response()->json(['message' => 'Endereço criado com sucesso!'], Response::HTTP_CREATED);
+        try {
+            $data = $request->all();
+            $data['pessoa_id'] = $pessoaId;
+            $validation = $this->enderecoService->validateEnderecoInput($data);
+            if ($validation) {
+                return response()->json(['message' => $validation['message'], 'errors' => $validation['errors']], $validation['status']);
+            }
+            $this->enderecoService->create($data);
+            return response()->json(['message' => 'Endereço criado com sucesso!'], Response::HTTP_CREATED);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao criar endereço: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->enderecoService->update($id, $request->all());
-        return response()->json(['message' => 'Endereço atualizado com sucesso!'], Response::HTTP_OK);
+        try {
+            $validation = $this->enderecoService->validateEnderecoInput($request->all());
+            if ($validation) {
+                return response()->json(['message' => $validation['message'], 'errors' => $validation['errors']], $validation['status']);
+            }
+            $this->enderecoService->update($id, $request->all());
+            return response()->json(['message' => 'Endereço atualizado com sucesso!'], Response::HTTP_OK);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao atualizar endereço: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function destroy($id)
     {
-        $this->enderecoService->delete($id);
-        return response()->json(['message' => 'Endereço excluído com sucesso!'], Response::HTTP_OK);
+        try {
+            $this->enderecoService->delete($id);
+            return response()->json(['message' => 'Endereço excluído com sucesso!'], Response::HTTP_OK);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao excluir endereço: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\EnderecoRepository;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class EnderecoService
 {
@@ -15,39 +16,6 @@ class EnderecoService
         $this->enderecoRepository = $enderecoRepository;
     }
 
-    public function create($data)
-    {
-        $validation = $this->validateEnderecoInput($data);
-        if ($validation) {
-            return [
-                'message' => $validation['message'],
-                'errors' => $validation['errors'],
-                'status' => $validation['status'],
-            ];
-        }
-
-        return $this->enderecoRepository->create($data);
-    }
-
-    public function update($id, $data)
-    {
-        $validation = $this->validateEnderecoInput($data);
-        if ($validation) {
-            return [
-                'message' => $validation['message'],
-                'errors' => $validation['errors'],
-                'status' => $validation['status'],
-            ];
-        }
-
-        return $this->enderecoRepository->update($id, $data);
-    }
-
-    public function delete($id)
-    {
-        return $this->enderecoRepository->delete($id);
-    }
-
     public function validateEnderecoInput($data)
     {
         $rules = [
@@ -56,7 +24,7 @@ class EnderecoService
             'bairro' => 'required|string|max:255',
             'cidade' => 'required|string|max:255',
             'estado' => 'required|string|max:2',
-            'cep' => 'required|string|max:10',
+            'cep' => 'required|string|max:8',
             'pessoa_id' => 'required|exists:pessoas,id',
         ];
 
@@ -64,12 +32,39 @@ class EnderecoService
 
         if ($validator->fails()) {
             return [
-                'message' => 'Validation error',
+                'message' => 'Erro de validação',
                 'errors' => $validator->errors(),
                 'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
             ];
         }
 
         return null;
+    }
+
+    public function create($data)
+    {
+        try {
+            return $this->enderecoRepository->create($data);
+        } catch (Exception $e) {
+            throw new Exception('Erro ao criar endereço: ' . $e->getMessage());
+        }
+    }
+
+    public function update($id, $data)
+    {
+        try {
+            return $this->enderecoRepository->update($id, $data);
+        } catch (Exception $e) {
+            throw new Exception('Erro ao atualizar endereço: ' . $e->getMessage());
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+            return $this->enderecoRepository->delete($id);
+        } catch (Exception $e) {
+            throw new Exception('Erro ao excluir endereço: ' . $e->getMessage());
+        }
     }
 }

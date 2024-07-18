@@ -3,41 +3,65 @@
 namespace App\Repositories;
 
 use App\Models\Pessoa;
+use Exception;
 
 class PessoaRepository
 {
-    protected $pessoa;
-
-    public function __construct(Pessoa $pessoa)
+    public function getAllPessoas()
     {
-        $this->pessoa = $pessoa;
+        try {
+            return Pessoa::with('enderecos')->whereNull('deleted_at')->get();
+        } catch (Exception $e) {
+            throw new Exception('Erro ao buscar pessoas: ' . $e->getMessage());
+        }
     }
 
-    public function all()
+    public function getById($id)
     {
-        return $this->pessoa->with('enderecos')->get();
+        try {
+            return Pessoa::with('enderecos')->whereNull('deleted_at')->findOrFail($id);
+        } catch (Exception $e) {
+            throw new Exception('Erro ao buscar pessoa: ' . $e->getMessage());
+        }
     }
 
-    public function find($id)
+    public function getByCpf($cpf)
     {
-        return $this->pessoa->with('enderecos')->findOrFail($id);
+        try {
+            return Pessoa::where('cpf', $cpf)->first();
+        } catch (Exception $e) {
+            throw new Exception('Erro ao buscar pessoa por CPF: ' . $e->getMessage());
+        }
     }
 
-    public function create(array $data)
+    public function create($data)
     {
-        return $this->pessoa->create($data);
+        try {
+            return Pessoa::create($data);
+        } catch (Exception $e) {
+            throw new Exception('Erro ao criar pessoa: ' . $e->getMessage());
+        }
     }
 
-    public function update($id, array $data)
+    public function update($id, $data)
     {
-        $pessoa = $this->pessoa->findOrFail($id);
-        $pessoa->update($data);
-        return $pessoa;
+        try {
+            $pessoa = $this->getById($id);
+            $pessoa->update($data);
+            return $pessoa;
+        } catch (Exception $e) {
+            throw new Exception('Erro ao atualizar pessoa: ' . $e->getMessage());
+        }
     }
 
     public function delete($id)
     {
-        $pessoa = $this->pessoa->findOrFail($id);
-        return $pessoa->delete();
+        try {
+            $pessoa = $this->getById($id);
+            $pessoa->delete();
+            return $pessoa;
+        } catch (Exception $e) {
+            throw new Exception('Erro ao excluir pessoa: ' . $e->getMessage());
+        }
     }
 }
